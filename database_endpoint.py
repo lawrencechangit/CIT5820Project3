@@ -164,14 +164,3 @@ def order_book():
 
 if __name__ == '__main__':
     app.run(port='5002')
-    testorder4 = {'sig': '0xe1B77a920A0c5010469F40f14c5e4E03f4357226',
-            'payload': { 'sender_pk': 'AAAAC3NzaC1lZDI1NTE5AAAAIB8Ht8Z3j6yDWPBHQtOp/R9rjWvfMYo3MSA/K6q8D86r',
-             'receiver_pk': '0xe1B77a920A0c5010469F40f14c5e4E03f4357226',
-            'buy_currency': "Ethereum",
-            'sell_currency': "Algorand",
-            'buy_amount': 51,
-            'sell_amount': 257,
-            'platform': 'Algorand'
-            }}
-
-    verify(testorder4)
