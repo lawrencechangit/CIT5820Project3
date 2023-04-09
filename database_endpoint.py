@@ -138,7 +138,7 @@ def trade():
 @app.route('/order_book')
 def order_book():
     # Your code here
-    result=[]
+    initial_result=[]
     keyList = ['sender_pk', 'receiver_pk', 'buy_currency', 'sell_currency','buy_amount', 'sell_amount', 'signature']
     query = session.query(Order)
     query_result = g.session.execute(query)
@@ -151,13 +151,27 @@ def order_book():
         order_dict['buy_amount'] = order.buy_amount
         order_dict['sell_amount'] = order.sell_amount
         order_dict['signature'] = order.signature
-        result.append(order_dict)
+        initial_result.append(order_dict)
 
     # Note that you can access the database session using g.session
     g.session.commit()
-    print(jsonify(result))
+    session.commit()
+    keyList2 = ['data']
+    result = dict.fromkeys(keyList2)
+    result['data'] = initial_result
     return jsonify(result)
 
 
 if __name__ == '__main__':
     app.run(port='5002')
+    testorder4 = {'sig': '0xe1B77a920A0c5010469F40f14c5e4E03f4357226',
+            'payload': { 'sender_pk': 'AAAAC3NzaC1lZDI1NTE5AAAAIB8Ht8Z3j6yDWPBHQtOp/R9rjWvfMYo3MSA/K6q8D86r',
+             'receiver_pk': '0xe1B77a920A0c5010469F40f14c5e4E03f4357226',
+            'buy_currency': "Ethereum",
+            'sell_currency': "Algorand",
+            'buy_amount': 51,
+            'sell_amount': 257,
+            'platform': 'Algorand'
+            }}
+
+    verify(testorder4)
