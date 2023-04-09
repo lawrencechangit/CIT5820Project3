@@ -82,7 +82,7 @@ def trade():
         signature = contentPyth['sig']
         payload = json.dumps(contentPyth['payload'])
         sender_pk = contentPyth['payload']['sender_pk']
-        receiver_pk = contentPyth['payload']['reiceiver_pk']
+        receiver_pk = contentPyth['payload']['receiver_pk']
         buy_currency = contentPyth['payload']['buy_currency']
         sell_currency = contentPyth['payload']['sell_currency']
         buy_amount = contentPyth['payload']['buy_amount']
@@ -90,7 +90,7 @@ def trade():
         platform=contentPyth['payload']['platform']
         pk=sender_pk
     
-        verification_result=True
+        verification_result=False
 
         if platform == 'Ethereum':
             eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
