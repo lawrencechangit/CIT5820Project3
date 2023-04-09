@@ -38,7 +38,7 @@ def shutdown_session(response_or_exc):
 
 def log_message(d):
     # Takes input dictionary d and writes it to the Log table
-    message=d['payload']
+    message=d
     log_obj = Log(message=Log['message'])
     g.session.add(log_obj)
     g.session.commit()
