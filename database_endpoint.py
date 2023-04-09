@@ -10,67 +10,154 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import load_only
 
 from models import Base, Order, Log
+
 engine = create_engine('sqlite:///orders.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 
 app = Flask(__name__)
 
-#These decorators allow you to use g.session to access the database inside the request code
+
+# These decorators allow you to use g.session to access the database inside the request code
 @app.before_request
 def create_session():
-    g.session = scoped_session(DBSession) #g is an "application global" https://flask.palletsprojects.com/en/1.1.x/api/#application-globals
+    g.session = scoped_session(
+        DBSession)  # g is an "application global" https://flask.palletsprojects.com/en/1.1.x/api/#application-globals
+
 
 @app.teardown_appcontext
 def shutdown_session(response_or_exc):
     g.session.commit()
     g.session.remove()
 
+
 """
 -------- Helper methods (feel free to add your own!) -------
 """
 
-def log_message(d)
+
+def log_message(d):
     # Takes input dictionary d and writes it to the Log table
+    message=d['payload']
+    log_obj = Log(message=Log['message'])
+    g.session.add(log_obj)
+    g.session.commit()
     pass
+
+
+@app.route('/verify', methods=['GET', 'POST'])
+def verify(content):
+    #content = request.get_json(silent=True)
+    json_string = json.dumps(content)
+    contentPyth = json.loads(json_string)
+
+    signature = contentPyth['sig']
+    payload = json.dumps(contentPyth['payload'])
+    pk = contentPyth['payload']['sender_pk']
+    platform = contentPyth['payload']['platform']
+
+    result = False
+
+    if platform == 'Ethereum':
+        eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
+        if eth_account.Account.recover_message(eth_encoded_msg, signature=signature) == pk:
+            result = True
+
+    elif platform == 'Algorand':
+        if algosdk.util.verify_bytes(payload.encode('utf-8'), signature, pk):
+            result = True
+
+    return result
+
 
 """
 ---------------- Endpoints ----------------
 """
-    
+
+
 @app.route('/trade', methods=['POST'])
 def trade():
     if request.method == "POST":
         content = request.get_json(silent=True)
-        print( f"content = {json.dumps(content)}" )
-        columns = [ "sender_pk", "receiver_pk", "buy_currency", "sell_currency", "buy_amount", "sell_amount", "platform" ]
-        fields = [ "sig", "payload" ]
+        print(f"content = {json.dumps(content)}")
+        columns = ["sender_pk", "receiver_pk", "buy_currency", "sell_currency", "buy_amount", "sell_amount", "platform"]
+        fields = ["sig", "payload"]
         error = False
         for field in fields:
             if not field in content.keys():
-                print( f"{field} not received by Trade" )
-                print( json.dumps(content) )
+                print(f"{field} not received by Trade")
+                print(json.dumps(content))
                 log_message(content)
-                return jsonify( False )
-        
+                return jsonify(False)
+
         error = False
         for column in columns:
             if not column in content['payload'].keys():
-                print( f"{column} not received by Trade" )
+                print(f"{column} not received by Trade")
                 error = True
         if error:
-            print( json.dumps(content) )
+            print(json.dumps(content))
             log_message(content)
-            return jsonify( False )
-            
-        #Your code here
-        #Note that you can access the database session using g.session
+            return jsonify(False)
+
+        # Your code here
+        json_string = json.dumps(content)
+        contentPyth = json.loads(json_string)
+
+        signature = contentPyth['sig']
+        payload = json.dumps(contentPyth['payload'])
+        sender_pk = contentPyth['payload']['sender_pk']
+        receiver_pk = contentPyth['payload']['reiceiver_pk']
+        buy_currency = contentPyth['payload']['buy_currency']
+        sell_currency = contentPyth['payload']['sell_currency']
+        buy_amount = contentPyth['payload']['buy_amount']
+        sell_amount = contentPyth['payload']['sell_amount']
+
+        verification_result=verify(content)
+        if verification_result==True:
+            order = {}
+            order['sender_pk'] = sender_pk
+            order['receiver_pk'] = receiver_pk
+            order['buy_currency'] = buy_currency
+            order['sell_currency'] = sell_currency
+            order['buy_amount'] = buy_amount
+            order['sell_amount'] = sell_amount
+
+            # Insert the order
+            order_obj = Order(sender_pk=order['sender_pk'], receiver_pk=order['receiver_pk'],
+                              buy_currency=order['buy_currency'], sell_currency=order['sell_currency'],
+                              buy_amount=order['buy_amount'], sell_amount=order['sell_amount'])
+
+            g.session.add(order_obj)
+            g.session.commit()
+        else:
+            log_message(payload)
+        # Note that you can access the database session using g.session
+
 
 @app.route('/order_book')
 def order_book():
-    #Your code here
-    #Note that you can access the database session using g.session
+    # Your code here
+    result=[]
+    keyList = ['sender_pk', 'receiver_pk', 'buy_currency', 'sell_currency','buy_amount', 'sell_amount', 'signature']
+    query = session.query(Order)
+    query_result = g.session.execute(query)
+    for order in query_result.scalars().all():
+        order_dict = dict.fromkeys(keyList)
+        order_dict['sender_pk']=order.sender_pk
+        order_dict['receiver_pk']=order.receiver_pk
+        order_dict['buy_currency'] = order.buy_currency
+        order_dict['sell_currency'] = order.sell_currency
+        order_dict['buy_amount'] = order.buy_amount
+        order_dict['sell_amount'] = order.sell_amount
+        order_dict['signature'] = order.signature
+        result.append(order_dict)
+
+    # Note that you can access the database session using g.session
+    g.session.commit()
+    print(jsonify(result))
     return jsonify(result)
+
 
 if __name__ == '__main__':
     app.run(port='5002')
