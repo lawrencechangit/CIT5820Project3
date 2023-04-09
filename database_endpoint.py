@@ -89,6 +89,7 @@ def trade():
         buy_amount = contentPyth['payload']['buy_amount']
         sell_amount = contentPyth['payload']['sell_amount']
         platform=contentPyth['payload']['platform']
+        pk=sender_pk
 
         verification_result=False
 
