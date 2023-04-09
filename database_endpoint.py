@@ -114,7 +114,17 @@ def trade():
         buy_amount = contentPyth['payload']['buy_amount']
         sell_amount = contentPyth['payload']['sell_amount']
 
-        verification_result=verify(content)
+        verification_result=False
+
+        if platform == 'Ethereum':
+            eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
+            if eth_account.Account.recover_message(eth_encoded_msg, signature=signature) == pk:
+                verification_result = True
+
+        elif platform == 'Algorand':
+            if algosdk.util.verify_bytes(payload.encode('utf-8'), signature, pk):
+                verification_result = True
+        
         if verification_result==True:
             order = {}
             order['sender_pk'] = sender_pk
