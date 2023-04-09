@@ -144,8 +144,6 @@ def order_book():
     keyList2 = ['data']
     result = dict.fromkeys(keyList2)
     result['data'] = initial_result
-    print(result)
-    print(jsonify(result))
     return jsonify(result)
 
 
