@@ -90,10 +90,11 @@ def trade():
         sell_amount = contentPyth['payload']['sell_amount']
         platform=contentPyth['payload']['platform']
         pk=sender_pk
-
+    
         verification_result=False
 
         if platform == 'Ethereum':
+            print("here")
             eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
             if eth_account.Account.recover_message(eth_encoded_msg, signature=signature) == pk:
                 verification_result = True
