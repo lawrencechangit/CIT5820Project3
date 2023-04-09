@@ -113,6 +113,7 @@ def trade():
         sell_currency = contentPyth['payload']['sell_currency']
         buy_amount = contentPyth['payload']['buy_amount']
         sell_amount = contentPyth['payload']['sell_amount']
+        platform=contentPyth['payload']['platform']
 
         verification_result=False
 
