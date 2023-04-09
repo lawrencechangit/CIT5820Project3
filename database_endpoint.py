@@ -45,31 +45,6 @@ def log_message(d):
     pass
 
 
-@app.route('/verify', methods=['GET', 'POST'])
-def verify(content):
-    #content = request.get_json(silent=True)
-    json_string = json.dumps(content)
-    contentPyth = json.loads(json_string)
-
-    signature = contentPyth['sig']
-    payload = json.dumps(contentPyth['payload'])
-    pk = contentPyth['payload']['sender_pk']
-    platform = contentPyth['payload']['platform']
-
-    result = False
-
-    if platform == 'Ethereum':
-        eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
-        if eth_account.Account.recover_message(eth_encoded_msg, signature=signature) == pk:
-            result = True
-
-    elif platform == 'Algorand':
-        if algosdk.util.verify_bytes(payload.encode('utf-8'), signature, pk):
-            result = True
-
-    return result
-
-
 """
 ---------------- Endpoints ----------------
 """
@@ -165,8 +140,6 @@ def order_book():
         initial_result.append(order_dict)
 
     # Note that you can access the database session using g.session
-    g.session.commit()
-    g.session.commit()
     keyList2 = ['data']
     result = dict.fromkeys(keyList2)
     result['data'] = initial_result
