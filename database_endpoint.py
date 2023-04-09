@@ -101,6 +101,7 @@ def trade():
             return jsonify(False)
 
         # Your code here
+        content = request.get_json(silent=True)
         json_string = json.dumps(content)
         contentPyth = json.loads(json_string)
 
@@ -138,7 +139,6 @@ def trade():
 @app.route('/order_book')
 def order_book():
     # Your code here
-    initial_result=[]
     keyList = ['sender_pk', 'receiver_pk', 'buy_currency', 'sell_currency','buy_amount', 'sell_amount', 'signature']
     query = g.session.query(Order)
     query_result = g.session.execute(query)
@@ -159,8 +159,11 @@ def order_book():
     keyList2 = ['data']
     result = dict.fromkeys(keyList2)
     result['data'] = initial_result
+    print(result)
+    print(jsonify(result))
     return jsonify(result)
 
 
 if __name__ == '__main__':
     app.run(port='5002')
+    
