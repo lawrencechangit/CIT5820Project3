@@ -140,7 +140,7 @@ def order_book():
     # Your code here
     initial_result=[]
     keyList = ['sender_pk', 'receiver_pk', 'buy_currency', 'sell_currency','buy_amount', 'sell_amount', 'signature']
-    query = session.query(Order)
+    query = g.session.query(Order)
     query_result = g.session.execute(query)
     for order in query_result.scalars().all():
         order_dict = dict.fromkeys(keyList)
@@ -155,7 +155,7 @@ def order_book():
 
     # Note that you can access the database session using g.session
     g.session.commit()
-    session.commit()
+    g.session.commit()
     keyList2 = ['data']
     result = dict.fromkeys(keyList2)
     result['data'] = initial_result
