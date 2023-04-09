@@ -90,7 +90,7 @@ def trade():
         platform=contentPyth['payload']['platform']
         pk=sender_pk
     
-        verification_result=False
+        verification_result=True
 
         if platform == 'Ethereum':
             eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
