@@ -76,7 +76,6 @@ def trade():
             return jsonify(False)
 
         # Your code here
-        content = request.get_json(silent=True)
         json_string = json.dumps(content)
         contentPyth = json.loads(json_string)
 
@@ -94,7 +93,6 @@ def trade():
         verification_result=False
 
         if platform == 'Ethereum':
-            print("here")
             eth_encoded_msg = eth_account.messages.encode_defunct(text=payload)
             if eth_account.Account.recover_message(eth_encoded_msg, signature=signature) == pk:
                 verification_result = True
@@ -130,6 +128,7 @@ def order_book():
     keyList = ['sender_pk', 'receiver_pk', 'buy_currency', 'sell_currency','buy_amount', 'sell_amount', 'signature']
     query = g.session.query(Order)
     query_result = g.session.execute(query)
+    initial_result=[]
     for order in query_result.scalars().all():
         order_dict = dict.fromkeys(keyList)
         order_dict['sender_pk']=order.sender_pk
